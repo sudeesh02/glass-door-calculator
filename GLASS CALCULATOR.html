@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glass Door & Partition Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #f7f9fb, #e9edf2);
+      margin: 0; padding: 0;
+    }
+    .container {
+      max-width: 600px; margin: 40px auto; padding: 25px;
+      background: #fff; border-radius: 15px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+    }
+    h1 {
+      text-align: center; color: #0056b3; margin-bottom: 30px;
+      font-size: 26px;
+    }
+    label { 
+      font-weight: 600; margin-top: 15px; display: block; color: #333;
+    }
+    input, select {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-top: 5px;
+      font-size: 16px; box-sizing: border-box;
+    }
+    button {
+      width: 100%; padding: 14px; background: #007bff;
+      color: white; font-size: 18px; border: none;
+      border-radius: 8px; margin-top: 25px; cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #0056b3; }
+    .result {
+      margin-top: 30px; padding: 20px;
+      border-radius: 10px; background: #f1f1f1;
+      text-align: center; font-size: 20px; color: #333;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .section-title {
+      margin-top: 20px; font-size: 20px; color: #007bff; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Glass Door & Partition Calculator</h1>
+
+  <label>Select Calculation Mode:</label>
+  <select id="calcType" onchange="toggleMode()">
+    <option value="door">Door Glass Calculation</option>
+    <option value="reverse">Partition Glass Calculation</option>
+  </select>
+
+  <!-- Door Section -->
+  <div id="doorSection">
+    <div class="section-title">Door Glass</div>
+
+    <label>Profile Type:</label>
+    <select id="profileType">
+      <option value="60">60mm Shutter</option>
+      <option value="100">100mm Shutter</option>
+      <option value="120">120mm Shutter</option>
+      <option value="150">150mm Shutter</option>
+      <option value="Z-Both">Z Profile - Both Sides</option>
+      <option value="Z-One">Z Profile - One Side</option>
+      <option value="Z-Center">Z Profile - Center</option>
+    </select>
+
+    <label>Door Type:</label>
+    <select id="doorType">
+      <option value="double">Double Glass Door</option>
+      <option value="single">Single Glass Door</option>
+    </select>
+
+    <label>Door Width (mm):</label>
+    <input type="number" id="doorWidth" placeholder="Enter door width">
+
+    <label>Door Height (mm):</label>
+    <input type="number" id="doorHeight" placeholder="Enter door height">
+  </div>
+
+  <!-- Reverse Partition Section -->
+  <div id="reverseSection" style="display:none;">
+    <div class="section-title">Partition Glass</div>
+
+    <label>Outer Frame Thickness (mm):</label>
+    <input type="number" id="outerFrameThk" placeholder="e.g. 130" value="130">
+
+    <label>Million Thickness (mm):</label>
+    <input type="number" id="millionThk" placeholder="e.g. 70" value="70">
+
+    <label>No. of Million:</label>
+    <input type="number" id="noMillion" placeholder="e.g. 3" value="3">
+
+    <label>No. of Glass Panels:</label>
+    <input type="number" id="noOfGlass" placeholder="e.g. 4" value="4">
+
+    <label>Total Partition Width (mm):</label>
+    <input type="number" id="partitionWidth" placeholder="e.g. 5000" value="5000">
+
+    <label>Total Partition Height (mm):</label>
+    <input type="number" id="partitionHeight" placeholder="e.g. 2400" value="2400">
+  </div>
+
+  <button onclick="calculate()">Calculate Glass Size</button>
+  <div id="result" class="result"></div>
+</div>
+
+<script>
+  function toggleMode() {
+    const mode = document.getElementById("calcType").value;
+    document.getElementById("doorSection").style.display = (mode === "door") ? "block" : "none";
+    document.getElementById("reverseSection").style.display = (mode === "reverse") ? "block" : "none";
+    document.getElementById("result").innerHTML = "";
+  }
+
+  function calculate() {
+    const type = document.getElementById("calcType").value;
+
+    if (type === "door") {
+      const profileType = document.getElementById("profileType").value;
+      const doorType = document.getElementById("doorType").value;
+      const width = parseFloat(document.getElementById("doorWidth").value);
+      const height = parseFloat(document.getElementById("doorHeight").value);
+
+      if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+        document.getElementById("result").innerHTML = "❌ Enter valid door width & height!";
+        return;
+      }
+
+      const deductions = {
+        "60": { double: 366, single: 225, height: 237.5 },
+        "100": { double: 526, single: 305, height: 267.5 },
+        "120": { double: 606, single: 345, height: 287.5 },
+        "150": { double: 726, single: 405, height: 317.5 },
+        "Z-Both": { double: 406, single: 265, height: 237.5 },
+        "Z-One": { double: 386, single: 245, height: 237.5 },
+        "Z-Center": { double: 386, single: 245, height: 237.5 }
+      };
+
+      const deduction = deductions[profileType][doorType];
+      const heightDeduction = deductions[profileType]["height"];
+      const glassWidth = (doorType === "double") ? (width - deduction) / 2 : (width - deduction);
+      const glassHeight = height - heightDeduction;
+
+      document.getElementById("result").innerHTML = 
+        `✅ <b>Glass Width:</b> ${glassWidth.toFixed(1)} mm<br>✅ <b>Glass Height:</b> ${glassHeight.toFixed(1)} mm`;
+    }
+
+    else if (type === "reverse") {
+      const outerFrameThk = parseFloat(document.getElementById("outerFrameThk").value);
+      const millionThk = parseFloat(document.getElementById("millionThk").value);
+      const noMillion = parseInt(document.getElementById("noMillion").value);
+      const noOfGlass = parseInt(document.getElementById("noOfGlass").value);
+      const totalPartitionWidth = parseFloat(document.getElementById("partitionWidth").value);
+      const totalPartitionHeight = parseFloat(document.getElementById("partitionHeight").value);
+
+      if ([outerFrameThk, millionThk, noMillion, noOfGlass, totalPartitionWidth, totalPartitionHeight].some(isNaN) || noOfGlass <= 0) {
+        document.getElementById("result").innerHTML = "❌ Enter valid partition values!";
+        return;
+      }
+
+      const singleGlassWidth = (totalPartitionWidth - outerFrameThk - (millionThk * noMillion)) / noOfGlass;
+      const singleGlassHeight = totalPartitionHeight - outerFrameThk;
+
+      document.getElementById("result").innerHTML = 
+        `✅ <b>Glass Width:</b> ${singleGlassWidth.toFixed(1)} mm<br>✅ <b>Glass Height:</b> ${singleGlassHeight.toFixed(1)} mm`;
+    }
+  }
+</script>
+
+</body>
+</html>
